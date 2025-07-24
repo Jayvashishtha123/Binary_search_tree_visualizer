@@ -63,16 +63,18 @@ Insert, clear, zoom, search & highlight your BST while stars blink and the headi
 
 
 
-   	2.	Install dependencies
+2.	Install dependencies
 
     cd src
     npm install
 
-	3.	Run Development Server
+3.	Run Development Server
     npm run dev
 
-    📁 Project Structure
-    galaxy-bst-visualizer/
+📁 Project Structure
+
+
+galaxy-bst-visualizer/
 ├── assets/               # Screenshots and images for README
 │   ├── galaxy_bg.png
 │   ├── bst_insert.png
