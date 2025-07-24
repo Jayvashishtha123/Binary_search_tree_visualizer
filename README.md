@@ -1,12 +1,62 @@
-# React + Vite
+# 🌌 Galaxy BST Visualizer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive Binary Search Tree visualizer set against an animated galaxy backdrop, built with **Vite + React + Tailwind CSS + Framer Motion**.  
+Insert, clear, zoom, search & highlight your BST while stars blink and the heading cycles through rainbow hues!
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📸 Screenshots
 
-## Expanding the ESLint configuration
+<p align="center">
+  <img src="assets/galaxy_bg.png" alt="Galaxy background with blinking stars" width="600" />
+</p>
+<p align="center">
+  <img src="assets/bst_insert.png" alt="Inserting nodes with animation" width="600" />
+</p>
+<p align="center">
+  <img src="assets/zoom_search.png" alt="Zoom controls and search highlight" width="600" />
+</p>
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## ✨ Features
+
+- **Animated Galaxy Background** with 200 blinking stars  
+- **Color-Cycling Heading** via CSS keyframe animation  
+- **Framer Motion** for:
+  - Smooth edge-drawing  
+  - Springy node pop-ins & hover effects  
+- **Interactive Controls**:
+  - Insert / Clear nodes  
+  - Zoom In / Zoom Out / Reset Zoom  
+  - Search & Highlight a node  
+- **In-Order Traversal** display  
+- **Responsive, scrollable SVG** that never clips your tree  
+- **Tailwind CSS** styling throughout
+
+---
+
+## 🛠️ Tech Stack
+
+| Frontend                |  
+|-------------------------|  
+| Vite                    |  
+| React                   |  
+| Tailwind CSS            |  
+| Framer Motion           |  
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) v14+  
+- [npm](https://www.npmjs.com/) or yarn  
+
+### Installation
+
+1. **Clone the repo**  
+   ```bash
+   git clone https://github.com/your-username/galaxy-bst-visualizer.git
+   cd galaxy-bst-visualizer
