@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+// File: src/BSTVisualizer.jsx
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // --- BST Helpers ---
 function createNode(val) { return { val, left: null, right: null }; }
@@ -11,7 +12,7 @@ function insert(root, val) {
 }
 function buildTree(values) {
   let root = null;
-  for (let v of values) root = insert(root, v);
+  for (const v of values) root = insert(root, v);
   return root;
 }
 
@@ -25,40 +26,146 @@ function layoutTree(node, depth = 0, x = 0, positions = []) {
 }
 function assignParents(positions, node, parent = null) {
   if (!node) return;
-  const p = positions.find((p) => p.node === node);
+  const p = positions.find(p => p.node === node);
   if (p) p.parent = parent;
   assignParents(positions, node.left, node);
   assignParents(positions, node.right, node);
 }
 
-// --- Colors ---
-const COLORS = [
-  "#FF6B6B","#6BCB77","#4D96FF","#FFD93D",
-  "#AB47BC","#FF7043","#2EC4B6","#FF90B3"
-];
+// --- Traversal ---
+function inorderList(node, arr = []) {
+  if (!node) return arr;
+  inorderList(node.left, arr);
+  arr.push(node.val);
+  inorderList(node.right, arr);
+  return arr;
+}
+
+// --- Color Palette ---
+const COLORS = ['#FF6B6B','#6BCB77','#4D96FF','#FFD93D','#AB47BC','#FF7043','#2EC4B6','#FF90B3'];
 
 export default function BSTVisualizer() {
-  const [values, setValues] = useState([]);
-  const [input, setInput]   = useState("");
-  const [search, setSearch] = useState("");
-  const [zoom, setZoom]     = useState(1);
+  // State
+  const [values, setValues]     = useState([]);
+  const [history, setHistory]   = useState([[]]);
+  const [histIndex, setHistIndex] = useState(0);
+  const [input, setInput]       = useState('');
+  const [search, setSearch]     = useState('');
+  const [zoom, setZoom]         = useState(1);
+  const [theme, setTheme]       = useState('galaxy');
+  const svgRef                  = useRef(null);
 
-  // Generate stars once on mount
-  const stars = useMemo(() => {
-    return Array.from({ length: 200 }, () => ({
-      top:  Math.random() * 100 + "%",
-      left: Math.random() * 100 + "%",
-      size: Math.random() * 2 + 1,
-      delay: Math.random() * 2 + "s"
-    }));
+  // Persist/load
+  useEffect(() => {
+    const stored = localStorage.getItem('bst-values');
+    if (stored) {
+      try {
+        const arr = JSON.parse(stored);
+        setValues(arr);
+        setHistory([arr]);
+        setHistIndex(0);
+      } catch {}
+    }
   }, []);
+  useEffect(() => {
+    localStorage.setItem('bst-values', JSON.stringify(values));
+  }, [values]);
+
+  // History helper
+  const pushHistory = arr => {
+    const h = history.slice(0, histIndex + 1);
+    h.push(arr);
+    setHistory(h);
+    setHistIndex(h.length - 1);
+    setValues(arr);
+  };
 
   // Handlers
-  const handleInsert    = () => { const v = +input; if (!isNaN(v) && !values.includes(v)) { setValues(a => [...a, v]); setInput(""); } };
-  const handleClear     = () => setValues([]);
-  const handleZoomIn    = () => setZoom(z => Math.min(z * 1.2, 5));
-  const handleZoomOut   = () => setZoom(z => Math.max(z / 1.2, 0.2));
-  const handleZoomReset = () => setZoom(1);
+  const handleInsert = () => {
+    const v = parseInt(input, 10);
+    if (!isNaN(v) && !values.includes(v)) {
+      pushHistory([...values, v]);
+      setInput('');
+    }
+  };
+  const handleDelete = () => {
+    const v = parseInt(input, 10);
+    if (!isNaN(v) && values.includes(v)) {
+      pushHistory(values.filter(x => x !== v));
+      setInput('');
+    }
+  };
+  const handleClear = () => pushHistory([]);
+  const handleUndo  = () => {
+    if (histIndex > 0) {
+      const ni = histIndex - 1;
+      setHistIndex(ni);
+      setValues(history[ni]);
+    }
+  };
+  const handleRedo  = () => {
+    if (histIndex < history.length - 1) {
+      const ni = histIndex + 1;
+      setHistIndex(ni);
+      setValues(history[ni]);
+    }
+  };
+  const handleExportJSON = () => {
+    const blob = new Blob([JSON.stringify(values)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'bst.json'; a.click();
+    URL.revokeObjectURL(url);
+  };
+  const handleImportJSON = e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const arr = JSON.parse(reader.result);
+        if (Array.isArray(arr)) pushHistory(arr);
+      } catch {}
+    };
+    reader.readAsText(file);
+  };
+  const handleToggleTheme = () => {
+    const next = theme === 'galaxy' ? 'dark' : theme === 'dark' ? 'light' : 'galaxy';
+    setTheme(next);
+  };
+  const handleDownloadSVG = () => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const serializer = new XMLSerializer();
+    const str = serializer.serializeToString(svg);
+    const blob = new Blob([str], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'bst.svg'; a.click();
+    URL.revokeObjectURL(url);
+  };
+  const handleDownloadPNG = () => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const serializer = new XMLSerializer();
+    const svgStr = serializer.serializeToString(svg);
+    const canvas = document.createElement('canvas');
+    const W = svg.viewBox.baseVal.width;
+    const H = svg.viewBox.baseVal.height;
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      const pngUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = pngUrl; a.download = 'bst.png'; a.click();
+    };
+    img.src = url;
+  };
 
   // Build & layout
   const root = buildTree(values);
@@ -68,148 +175,83 @@ export default function BSTVisualizer() {
     assignParents(nodes, root);
   }
 
-  // Dimensions
+  // Dimensions & coords
   const nodeR    = 20;
   const vGap     = 80;
   const hGap     = 60;
-  const depthMax = nodes.reduce((m,p) => Math.max(m, p.depth), 0);
-  const W        = Math.max(600, (nodes.length + 2) * hGap) * zoom;
-  const H        = Math.max(300, (depthMax + 2) * vGap) * zoom;
-
-  // Compute coords
-  const coords = {};
-  nodes.forEach(({ node, x, depth }) => {
-    coords[node.val] = {
-      cx: (hGap + x * hGap) * zoom,
-      cy: (vGap + depth * vGap) * zoom
-    };
+  const depthMax = nodes.reduce((m,p)=>Math.max(m,p.depth),0);
+  const W        = Math.max(600,(nodes.length+2)*hGap) * zoom;
+  const H        = Math.max(300,(depthMax+2)*vGap) * zoom;
+  const coords   = {};
+  nodes.forEach(({node,x,depth}) => {
+    coords[node.val] = { cx: (hGap + x*hGap)*zoom, cy: (vGap + depth*vGap)*zoom };
   });
 
-  // In-order traversal
-  const inorder = [];
-  (function trav(n) {
-    if (!n) return;
-    trav(n.left);
-    inorder.push(n.val);
-    trav(n.right);
-  })(root);
+  const inorder = inorderList(root, []);
 
   return (
-    <div className="galaxy min-h-screen">
-      {/* blinking stars */}
-      {stars.map((s, i) => (
-        <div
-          key={i}
-          className="star"
-          style={{
-            top: s.top,
-            left: s.left,
-            width: s.size,
-            height: s.size,
-            animationDelay: s.delay
-          }}
-        />
-      ))}
-
-      {/* main panel */}
+    <div className={`relative min-h-screen ${theme}`}>
       <div className="relative z-10 p-6 mx-auto max-w-4xl bg-black/50 rounded-lg shadow-lg">
-        <h1 className="galaxy-heading text-4xl font-extrabold text-center mb-6 text-white drop-shadow-lg">
-          BST Visualizer 🌌
-        </h1>
+        <h1 className="galaxy-heading text-4xl mb-6 text-white text-center">BST Visualizer 🌌</h1>
 
-        {/* controls */}
+        {/* Row 1 */}
         <div className="flex flex-wrap justify-center gap-3 mb-4">
           <input
-            type="number"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            className="border rounded px-3 py-1 w-24 bg-black/30 text-white"
-            placeholder="Value"
+            type="number" value={input}
+            onChange={e=>setInput(e.target.value)}
+            className="border rounded px-3 py-1 w-24 border-white text-white" placeholder="Value"
           />
-          <button onClick={handleInsert}
-            className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">
-            Insert
-          </button>
-          <button onClick={handleClear}
-            className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700">
-            Clear
-          </button>
-          <input
-            type="number"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="border rounded px-3 py-1 w-24 bg-black/30 text-white"
-            placeholder="Search"
-          />
+          <button onClick={handleInsert} className="bg-green-600 text-white px-4 py-1 rounded">Insert</button>
+          <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-1 rounded">Delete</button>
+          <button onClick={handleClear}  className="bg-gray-600 text-white px-4 py-1 rounded">Clear All</button>
+          <button onClick={handleUndo}   className="bg-blue-600 text-white px-4 py-1 rounded disabled:opacity-50" disabled={histIndex===0}>Undo</button>
+          <button onClick={handleRedo}   className="bg-blue-600 text-white px-4 py-1 rounded disabled:opacity-50" disabled={histIndex>=history.length-1}>Redo</button>
         </div>
 
-        {/* zoom controls */}
-        <div className="flex justify-center gap-3 mb-6">
-          <button onClick={handleZoomIn}
-            className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">
-            Zoom In
-          </button>
-          <button onClick={handleZoomOut}
-            className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">
-            Zoom Out
-          </button>
-          <button onClick={handleZoomReset}
-            className="bg-gray-500 text-white px-4 py-1 rounded hover:bg-gray-600">
-            Reset Zoom
-          </button>
+        {/* Row 2 */}
+        <div className="flex flex-wrap justify-center gap-3 mb-6">
+          {/* <input type="file" accept="application/json" onChange={handleImportJSON} /> */}
+          <button onClick={handleExportJSON} className="bg-indigo-600 text-white px-4 py-1 rounded">Export JSON</button>
+          <button onClick={handleDownloadSVG} className="bg-indigo-500 text-white px-4 py-1 rounded">Download SVG</button>
+          <button onClick={handleDownloadPNG} className="bg-indigo-500 text-white px-4 py-1 rounded">Download PNG</button>
+          <button onClick={handleToggleTheme} className="bg-pink-600 text-white px-4 py-1 rounded">Toggle Theme</button>
         </div>
 
-        {/* tree container with white border */}
+        {/* Tree */}
         <div className="overflow-auto border-4 border-white rounded bg-black/30 p-2">
           <div style={{ width: W, height: H }}>
-            <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
-              {/* edges */}
+            <svg ref={svgRef} width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
               <AnimatePresence>
-                {nodes.map(({ node, parent }) => parent && (
-                  <motion.line key={`e-${node.val}`}
+                {nodes.map(({node,parent}) => parent && (
+                  <motion.line
+                    key={`e-${node.val}`}
                     x1={coords[parent.val].cx} y1={coords[parent.val].cy}
                     x2={coords[node.val].cx}   y2={coords[node.val].cy}
                     stroke="#eee" strokeWidth={1.5}
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 1 }}
-                    layout
+                    initial={{ pathLength:0 }} animate={{ pathLength:1 }}
+                    transition={{ duration:1 }} layout
                   />
                 ))}
               </AnimatePresence>
-
-              {/* nodes */}
               <AnimatePresence>
-                {nodes.map(({ node }, i) => {
-                  const color = COLORS[i % COLORS.length];
-                  const isH = String(node.val) === String(search);
+                {nodes.map(({node},i) => {
+                  const c = COLORS[i % COLORS.length];
+                  const isH = node.val === parseInt(search,10);
                   return (
                     <motion.g key={`n-${node.val}`}
-                      initial={{ scale: 0.5, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      whileHover={{ scale: 1.2 }}
-                      layout
+                      initial={{ scale:0.5, opacity:0 }} animate={{ scale:1, opacity:1 }}
+                      exit={{ scale:0, opacity:0 }} transition={{ type:'spring', stiffness:300, damping:20 }}
+                      whileHover={{ scale:1.2 }} layout
                     >
                       <circle
-                        cx={coords[node.val].cx}
-                        cy={coords[node.val].cy}
-                        r={nodeR * zoom}
-                        fill={color}
-                        stroke={isH ? "#FFFF00" : "#fff"}
-                        strokeWidth={isH ? 3 : 1.5}
+                        cx={coords[node.val].cx} cy={coords[node.val].cy}
+                        r={nodeR*zoom} fill={c}
+                        stroke={isH?'#FFFF00':'#fff'} strokeWidth={isH?3:1.5}
                       />
                       <text
-                        x={coords[node.val].cx}
-                        y={coords[node.val].cy + 5 * zoom}
-                        textAnchor="middle"
-                        fontSize={12 * zoom}
-                        fill="#000"
-                        fontWeight="bold"
-                      >
-                        {node.val}
-                      </text>
+                        x={coords[node.val].cx} y={coords[node.val].cy + 5*zoom}
+                        textAnchor="middle" fontSize={14*zoom} fill="#000" fontWeight="bold"
+                      >{node.val}</text>
                     </motion.g>
                   );
                 })}
@@ -218,10 +260,7 @@ export default function BSTVisualizer() {
           </div>
         </div>
 
-        {/* traversal */}
-        <p className="mt-4 text-center text-white">
-          In-order: {inorder.join(", ")}
-        </p>
+        <p className="mt-4 text-center text-white">In-order: {inorder.join(', ')}</p>
       </div>
     </div>
   );
