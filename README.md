@@ -8,7 +8,7 @@ Insert, clear, zoom, search & highlight your BST while stars blink and the headi
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="assets/galaxy_bg.png" alt="Galaxy background with blinking stars" width="600" />
+  <img src="assets/ss.png" alt="Galaxy background with blinking stars" width="600" />
 </p>
 <p align="center">
   <img src="assets/bst_insert.png" alt="Inserting nodes with animation" width="600" />
