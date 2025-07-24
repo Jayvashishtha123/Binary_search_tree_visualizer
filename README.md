@@ -72,8 +72,6 @@ Insert, clear, zoom, search & highlight your BST while stars blink and the headi
     npm run dev
 
 📁 Project Structure
-
-
 galaxy-bst-visualizer/
 ├── assets/               # Screenshots and images for README
 │   ├── galaxy_bg.png
