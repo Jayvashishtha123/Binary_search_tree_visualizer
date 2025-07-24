@@ -5,17 +5,24 @@ Insert, clear, zoom, search & highlight your BST while stars blink and the headi
 
 ---
 
+## 🌟 Demo Video
+
+\
+<video src="assets/demo.mov" controls width="600" poster="assets/galaxy_bg.png">
+  Your browser does not support the video tag.  
+  [Download the demo video](assets/demo.mp4)
+</video>
+
 ## 📸 Screenshots
+
 
 <p align="center">
   <img src="assets/ss.png" alt="Galaxy background with blinking stars" width="600" />
 </p>
 <p align="center">
-  <img src="assets/bst_insert.png" alt="Inserting nodes with animation" width="600" />
+  <img src="assets/ss2.png" alt="Inserting nodes with animation" width="600" />
 </p>
-<p align="center">
-  <img src="assets/zoom_search.png" alt="Zoom controls and search highlight" width="600" />
-</p>
+
 
 ---
 
