@@ -6,12 +6,16 @@ Insert, clear, zoom, search & highlight your BST while stars blink and the headi
 ---
 
 ## 🌟 Demo Video
+## 🌟 Demo Video
 
-\
+[![Watch the demo](assets/ss.png)](assets/demo.mov)
+
+Click the image to watch or download the demo.
+<!-- \
 <video src="assets/demo.mov" controls width="600" poster="assets/galaxy_bg.png">
   Your browser does not support the video tag.  
   [Download the demo video](assets/demo.mp4)
-</video>
+</video> -->
 
 ## 📸 Screenshots
 
