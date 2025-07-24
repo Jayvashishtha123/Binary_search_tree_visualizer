@@ -36,3 +36,15 @@
 .galaxy-heading {
   animation: rainbow 8s linear infinite;
 }
+
+.galaxy-heading {
+  background: linear-gradient(90deg, #a1c4fd, #c2e9fb, #d1c4e9, #7f53ac, #657ced, #ff6b6b);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: galaxyGlow 8s linear infinite;
+}
+@keyframes galaxyGlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}

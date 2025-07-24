@@ -1,6 +1,6 @@
-// File: src/BSTVisualizer.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import BST3DVisualizer from './BST3DVisualizer'; // Make sure you have this file!
 
 // --- BST Helpers ---
 function createNode(val) { return { val, left: null, right: null }; }
@@ -15,8 +15,6 @@ function buildTree(values) {
   for (const v of values) root = insert(root, v);
   return root;
 }
-
-// --- Layout Helpers ---
 function layoutTree(node, depth = 0, x = 0, positions = []) {
   if (!node) return x;
   x = layoutTree(node.left, depth + 1, x, positions);
@@ -31,8 +29,6 @@ function assignParents(positions, node, parent = null) {
   assignParents(positions, node.left, node);
   assignParents(positions, node.right, node);
 }
-
-// --- Traversal ---
 function inorderList(node, arr = []) {
   if (!node) return arr;
   inorderList(node.left, arr);
@@ -40,13 +36,12 @@ function inorderList(node, arr = []) {
   inorderList(node.right, arr);
   return arr;
 }
-
-// --- Color Palette ---
 const COLORS = ['#FF6B6B','#6BCB77','#4D96FF','#FFD93D','#AB47BC','#FF7043','#2EC4B6','#FF90B3'];
 
 export default function BSTVisualizer() {
   // State
   const [values, setValues]     = useState([]);
+  const [show3D, setShow3D]     = useState(false);
   const [history, setHistory]   = useState([[]]);
   const [histIndex, setHistIndex] = useState(0);
   const [input, setInput]       = useState('');
@@ -190,16 +185,38 @@ export default function BSTVisualizer() {
   const inorder = inorderList(root, []);
 
   return (
-    <div className={`relative min-h-screen ${theme}`}>
-      <div className="relative z-10 p-6 mx-auto max-w-4xl bg-black/50 rounded-lg shadow-lg">
-        <h1 className="galaxy-heading text-4xl mb-6 text-white text-center">BST Visualizer 🌌</h1>
+    <div
+      className={`relative min-h-screen transition-colors duration-700 ${
+        theme === "galaxy"
+          ? "bg-gradient-to-br from-black via-indigo-900 to-purple-950"
+          : theme === "dark"
+          ? "bg-gray-900"
+          : "bg-gray-100"
+      }`}
+    >
+      <div
+        className={`relative z-10 p-6 mx-auto max-w-4xl rounded-lg shadow-lg ${
+          theme === "light" ? "bg-white text-gray-900" : "bg-black/50 text-white"
+        }`}
+      >
+        <h1
+          className={`galaxy-heading text-4xl mb-6 text-center font-bold ${
+            theme === "light" ? "text-indigo-800" : "text-white"
+          }`}
+        >
+          Binary-Search-Tree Visualizer
+        </h1>
 
         {/* Row 1 */}
         <div className="flex flex-wrap justify-center gap-3 mb-4">
           <input
             type="number" value={input}
             onChange={e=>setInput(e.target.value)}
-            className="border rounded px-3 py-1 w-24 border-white text-white" placeholder="Value"
+            className={`border rounded px-3 py-1 w-24 ${
+              theme === "light"
+                ? "border-indigo-400 text-gray-900"
+                : "border-white text-white bg-transparent"
+            }`} placeholder="Value"
           />
           <button onClick={handleInsert} className="bg-green-600 text-white px-4 py-1 rounded">Insert</button>
           <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-1 rounded">Delete</button>
@@ -208,9 +225,16 @@ export default function BSTVisualizer() {
           <button onClick={handleRedo}   className="bg-blue-600 text-white px-4 py-1 rounded disabled:opacity-50" disabled={histIndex>=history.length-1}>Redo</button>
         </div>
 
+        {/* 3D button */}
+        <button
+          onClick={() => setShow3D(true)}
+          className="mt-4 mx-auto block bg-blue-700 hover:bg-blue-800 text-white px-6 py-2 rounded transition-all text-lg"
+        >
+          View in 3D
+        </button>
+
         {/* Row 2 */}
         <div className="flex flex-wrap justify-center gap-3 mb-6">
-          {/* <input type="file" accept="application/json" onChange={handleImportJSON} /> */}
           <button onClick={handleExportJSON} className="bg-indigo-600 text-white px-4 py-1 rounded">Export JSON</button>
           <button onClick={handleDownloadSVG} className="bg-indigo-500 text-white px-4 py-1 rounded">Download SVG</button>
           <button onClick={handleDownloadPNG} className="bg-indigo-500 text-white px-4 py-1 rounded">Download PNG</button>
@@ -259,9 +283,28 @@ export default function BSTVisualizer() {
             </svg>
           </div>
         </div>
-
-        <p className="mt-4 text-center text-white">In-order: {inorder.join(', ')}</p>
+        <p className="mt-4 text-center">
+          <span className={theme === "light" ? "text-indigo-800" : "text-white"}>
+            In-order: {inorder.join(', ')}
+          </span>
+        </p>
       </div>
+      {/* 3D Modal */}
+      {show3D && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80">
+          <div className="relative bg-gray-900 rounded-lg shadow-xl border-4 border-white" style={{ width: '80vw', height: '80vh' }}>
+            <button
+              className="absolute top-4 right-4 text-white text-2xl bg-pink-600 rounded-full px-3 py-1 shadow hover:bg-pink-700 z-10"
+              onClick={() => setShow3D(false)}
+            >
+              ×
+            </button>
+            <div style={{ width: '100%', height: '100%' }}>
+              <BST3DVisualizer values={values} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
