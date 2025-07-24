@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+/* Galaxy gradient background animation */
+@keyframes gradientBg {
+  0%   { background-position:   0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position:   0% 50%; }
+}
+
+.galaxy {
+  background: radial-gradient(ellipse at bottom, #0d0d1a 0%, #000 80%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Blinking stars */
+@keyframes blink {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 1; }
+}
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: blink 2s infinite ease-in-out;
+}
+
+/* Heading color-cycle */
+@keyframes rainbow {
+  0%   { color: #ff6b6b; }
+  25%  { color: #6bcB77; }
+  50%  { color: #4d96ff; }
+  75%  { color: #ffd93d; }
+  100% { color: #ff6b6b; }
+}
+.galaxy-heading {
+  animation: rainbow 8s linear infinite;
+}
