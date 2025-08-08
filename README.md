@@ -1,5 +1,7 @@
 # 🌌 Galaxy BST Visualizer
 
+http://bst_visualizer.surge.sh/
+
 An interactive Binary Search Tree visualizer set against an animated galaxy backdrop, built with **Vite + React + Tailwind CSS + Framer Motion**.  
 Insert, clear, zoom, search & highlight your BST while stars blink and the heading cycles through rainbow hues!
 
